@@ -1,0 +1,18 @@
+apiVerion: v2
+appVersion: 7.13.0
+name: opni-metricbeat
+version: 0.1.0
+description: Deploys metricbeat to gather and ship metrics for opni
+kubeVersion: '>=1.18.0-0'
+maintainers:
+- email: dan.bason@suse.com
+  name: dbason
+type: application
+sources:
+- https://github.com/dbason/opni-metricbeat
+dependencies:
+- name: kube-state-metrics
+  version: 3.1.1
+  repository: https://prometheus-community.github.io/helm-charts
+  condition: kubeStateMetrics.enabled
+  

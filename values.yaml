@@ -1,0 +1,57 @@
+# Configure kube-state-metric settings
+kubeStateMetrics:
+
+  # Enable the kube-state-metrics sub chart
+  enabled: true
+
+  #Provide an alternative kube-state-metrics address
+  address: ""
+
+# Configure gathering Events
+events:
+
+  # Enable event gathering in metricbeats
+  enabled: true
+
+# Elasticsearch config
+elasticsearch: 
+  host: elasticsearch
+  port: 9200
+  username: admin
+
+  # Provide a secret containing the elasticsearch password
+  passwordSecret:
+    name: es-password
+    key: password
+
+  # Install the metricbeat kibana dashboards
+  loadDashboards: true
+
+  # TLS settings for Elasticsearch
+  tls:
+    caSecret:
+      name: ""
+      key: ""
+    insecureSkipVerfication: false
+
+# Kibana connection settings
+kibana:
+  url: http://localhost
+  port: 5601
+
+resources: {}
+
+nodeSelector:
+  kubernetes.io/os: linux
+
+tolerations:
+  - key: cattle.io/os
+    operator: "Equal"
+    value: "linux"
+    effect: NoSchedule
+  - key: node-role.kubernetes.io/controlplane
+    value: "true"
+    effect: NoSchedule
+  - key: node-role.kubernetes.io/etcd
+    value: "true"
+    effect: NoExecute
