@@ -49,8 +49,34 @@ Configure the kube-state-metrics address
 */}}
 {{- define "kube-state-metrics.address" }}
 {{- if .Values.kubeStateMetrics.enabled -}}
-"kube-state-metrics:8080"
+{{- $name := include "opni-metricbeat.name" . -}}
+{{- printf "%s-kube-state-metrics:8080" $name -}}
 {{- else -}}
 {{ required ".Values.kubeStateMetrics.address is required if the kube-state-metrics chart is disabled" .Values.kubeStateMetrics.address }}
 {{- end -}}
 {{- end }}
+
+{{/*
+Calculate the kubernetes distribution
+*/}}
+{{- define "identifyDistribution" -}}
+{{- $nodes := (lookup "v1" "Node" "" "") -}}
+{{- if $nodes -}}
+{{- $_ := set . "dist" (first $nodes.items | dig "metadata" "labels" "node.kubernetes.io/instance-type" "nodist") -}}
+  {{- if eq .dist "nodist" -}}
+  {{- $_ := set . "dist" (hasKey ((first $nodes.items).metadata.annotations) "rke.cattle.io/internal-ip" | ternary "rke" "nodist") -}}
+  {{- end -}}
+{{- else -}}
+{{- $_ := set . "dist" "nodist" -}}
+{{- end -}}
+{{ .dist }}
+{{- end -}}
+
+{{/*
+Calculate the controlplane/master label
+*/}}
+{{- define "controlplaneLabel" -}}
+{{- $dist := include "identifyDistribution" . -}}
+{{- $default := or (eq $dist "rke2") (eq $dist "k3s") | ternary "node-role.kubernetes.io/master" "node-role.kubernetes.io/controlplane" -}}
+{{ default $default .Values.controlplaneLabel }}
+{{- end -}}

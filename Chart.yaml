@@ -1,4 +1,4 @@
-apiVerion: v2
+apiVersion: v2
 appVersion: 7.12.1
 name: opni-metricbeat
 version: 0.1.0

@@ -1,4 +1,5 @@
 {{- $kubeStateMetricsAddress := include "kube-state-metrics.address" . }}
+{{- $dist := include "identifyDistribution" . }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -38,6 +39,12 @@ data:
                     - state_resourcequota
                     - state_statefulset
                     - state_service
+                {{- if .Values.events.enabled }}
+                - module: kubernetes
+                  metricsets:
+                  - event
+                {{- end }}
+        {{- if (eq $dist "nodist") }}
                 - module: kubernetes
                   metricsets:
                     - apiserver
@@ -46,16 +53,42 @@ data:
                   ssl.certificate_authorities:
                     - /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
                   period: 30s
-                {{- if .Values.events.enabled }}
+        {{- else }}
+        {{- $controlplaneLabel := include "controlplaneLabel" . }}
+        - type: kubernetes
+          scope: node
+          node: ${NODE_NAME}
+          resource: node
+          add_resource_metadata:
+            node:
+              include_labels: ["{{ $controlplaneLabel }}"]
+          templates:
+            - condition:
+                contains:
+                  kubernetes.labels.{{ $controlplaneLabel | replace "." "_" }}: "true"
+              config:
                 - module: kubernetes
                   metricsets:
-                  - event
-                {{- end }}
-        # To enable hints based autodiscover uncomment this:
-        #- type: kubernetes
-        #  node: ${NODE_NAME}
-        #  hints.enabled: true
-
+                    - controllermanager
+                  period: 10s
+                  host: ${NODE_NAME}
+                  hosts: ["localhost:10252"]
+                - module: kubernetes
+                  metricsets:
+                    - scheduler
+                  period: 10s
+                  host: ${NODE_NAME}
+                  hosts: ["localhost:10251"]
+                - module: kubernetes
+                  metricsets:
+                    - apiserver
+                  hosts: ["https://${NODE_NAME}:6443"]
+                  bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+                  ssl.verification_mode: "none"
+                  ssl.certificate_authorities:
+                    - /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+                  period: 30s
+        {{- end }}
     output.elasticsearch:
       hosts: ['${ELASTICSEARCH_HOST:elasticsearch}:${ELASTICSEARCH_PORT:9200}']
       username: ${ELASTICSEARCH_USERNAME}

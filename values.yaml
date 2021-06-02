@@ -39,6 +39,9 @@ kibana:
   url: http://localhost
   port: 5601
 
+# Label for identifying controlplane nodes
+controlplaneLabel: ""
+
 resources: {}
 
 nodeSelector:
