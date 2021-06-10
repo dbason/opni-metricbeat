@@ -49,8 +49,7 @@ Configure the kube-state-metrics address
 */}}
 {{- define "kube-state-metrics.address" }}
 {{- if .Values.kubeStateMetrics.enabled -}}
-{{- $name := include "opni-metricbeat.name" . -}}
-{{- printf "%s-kube-state-metrics:8080" $name -}}
+{{- printf "%s-kube-state-metrics:8080" .Release.Name -}}
 {{- else -}}
 {{ required ".Values.kubeStateMetrics.address is required if the kube-state-metrics chart is disabled" .Values.kubeStateMetrics.address }}
 {{- end -}}

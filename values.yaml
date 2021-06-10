@@ -25,14 +25,14 @@ elasticsearch:
     key: password
 
   # Install the metricbeat kibana dashboards
-  loadDashboards: true
+  loadDashboards: false
 
   # TLS settings for Elasticsearch
   tls:
     caSecret:
       name: ""
       key: ""
-    insecureSkipVerfication: false
+    insecureSkipVerification: false
 
 # Kibana connection settings
 kibana:

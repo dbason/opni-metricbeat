@@ -96,7 +96,7 @@ data:
   {{- if .Values.elasticsearch.tls.caSecret.name }}
     output.elasticsearch.ssl.certificate_authorities: ["/opt/certs/ca.crt"]
   {{- end }}
-  {{- if .Values.elasticsearch.tls.insecureSkipVerfication }}
+  {{- if .Values.elasticsearch.tls.insecureSkipVerification }}
     output.elasticsearch.ssl.verification_mode: "none"
   {{- end }}
     setup.ilm.enabled: false
